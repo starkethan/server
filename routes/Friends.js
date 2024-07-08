@@ -2,8 +2,30 @@ import express from 'express'
 const router  = express.Router()
 import { User } from '../models/User.js';
 import { WatingList } from '../models/WatingList.js';
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+
+dotenv.config();
 
 
+const verifyUser = (req, res, next) => {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.json("The token is missing");
+    } else {
+      jwt.verify(token, process.env.KEY, (err, decoded) => {
+        if (err) {
+          return res.json("The token is wrong");
+        } else {
+          req.email = decoded.email;
+          req.username = decoded.username;
+          req.id = decoded.id;
+          next();
+        }
+      });
+    }
+  };
+ 
 
 
 // for sending friend request
@@ -64,10 +86,20 @@ router.put('/r', async(req, res) => {
 
 
 
-// for getting all requests
+// for getting requests
 
-router.get('/requests', async(req, res) => {
-    WatingList.find()
+router.get('/requests', verifyUser, async(req, res) => {
+    const userId = req.id
+    WatingList.find({FriendId: userId})
+      .then((requests) => res.json(requests))
+      .catch((err) => res.json(err));
+})
+
+
+//requests sent by user
+router.get('/requestSent', verifyUser, async(req, res) => {
+    const userId = req.id
+    WatingList.find({SenderId: userId})
       .then((requests) => res.json(requests))
       .catch((err) => res.json(err));
 })

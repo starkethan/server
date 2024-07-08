@@ -51,7 +51,7 @@ router.post(
   verifyUser,
   upload.single("file"),
   async (req, res) => {
-   const post = await Post.create({
+    const post = await Post.create({
       description: req.body.description,
       file: req.file.filename,
       email: req.body.email,
@@ -62,7 +62,11 @@ router.post(
       { _id: req.params.id },
       {
         $push: {
-          posts: { post: req.file.filename, caption: req.body.description, id:post._id },
+          posts: {
+            post: req.file.filename,
+            caption: req.body.description,
+            id: post._id,
+          },
         },
       },
       { new: true }
@@ -72,19 +76,19 @@ router.post(
   }
 );
 
-
 router.get("/getposts", (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10; // Default limit of 5 posts per page
   const skip = Math.max(0, (page - 1) * limit) || 0; // Starting index (defaults to 0)
 
-
   Post.find()
-  .limit(limit)
-  .skip(skip)
+    .limit(limit)
+    .skip(skip)
     .then((posts) => res.json(posts))
     .catch((err) => res.json(err));
 });
+
+
 
 router.get("/getpost/:id", (req, res) => {
   Post.findById({ _id: req.params.id })
@@ -102,12 +106,13 @@ router.put("/deletepost/:id", async (req, res) => {
       },
       { new: true }
     );
-      await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       { _id: req.body.userId },
       {
         $pull: { likes: { id: req.params.id } },
       },
-      { new: true });
+      { new: true }
+    );
 
     res.json("Success");
   } catch (error) {
@@ -125,21 +130,36 @@ router.put("/like/:id", verifyUser, async (req, res) => {
       { new: true }
     );
     const currentUserId = req.id;
-    const userId = req.body.userId
-        if (userId !== currentUserId)
-    { 
-    await User.findByIdAndUpdate(
-      { _id: req.body.userId },
-      {
-        $addToSet: { likes: { username: req.username, email: req.email, id: req.params.id } },
-      },
-      { new: true });
+    const userId = req.body.userId;
+    if (userId !== currentUserId) {
       await User.findByIdAndUpdate(
         { _id: req.body.userId },
         {
-          $addToSet: { notifications: { username: req.username, email: req.email, id: req.params.id, notification: "liked your post" } },
+          $addToSet: {
+            likes: {
+              username: req.username,
+              email: req.email,
+              id: req.params.id,
+            },
+          },
         },
-        { new: true })};
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        { _id: req.body.userId },
+        {
+          $addToSet: {
+            notifications: {
+              username: req.username,
+              email: req.email,
+              id: req.params.id,
+              notification: "liked your post",
+            },
+          },
+        },
+        { new: true }
+      );
+    }
     res.json("Success");
   } catch (error) {
     console.log(error);
@@ -158,15 +178,29 @@ router.put("/unlike/:id", verifyUser, async (req, res) => {
     await User.findByIdAndUpdate(
       { _id: req.body.userId },
       {
-        $pull: { likes: { username: req.username, email: req.email, id: req.params.id } },
-      },
-      { new: true });
-      await User.findByIdAndUpdate(
-        { _id: req.body.userId },
-        {
-          $pull: { notifications: { username: req.username, email: req.email, id: req.params.id } },
+        $pull: {
+          likes: {
+            username: req.username,
+            email: req.email,
+            id: req.params.id,
+          },
         },
-        { new: true });
+      },
+      { new: true }
+    );
+    await User.findByIdAndUpdate(
+      { _id: req.body.userId },
+      {
+        $pull: {
+          notifications: {
+            username: req.username,
+            email: req.email,
+            id: req.params.id,
+          },
+        },
+      },
+      { new: true }
+    );
 
     res.json("Success");
   } catch (error) {
@@ -192,24 +226,24 @@ router.put("/comments/:id", verifyUser, async (req, res) => {
       { new: true }
     );
     const currentUserId = req.id;
-const userId = req.body.userId
-    if (userId !== currentUserId)
-{    await User.findByIdAndUpdate(
-      { _id: req.body.userId },
-      {
-        $push: {
-          notifications: {
-            created: Date.now(),
-            username: req.username,
-            email: req.email,
-            notification: "commented on your post",
-            id: req.params.id,
-
+    const userId = req.body.userId;
+    if (userId !== currentUserId) {
+      await User.findByIdAndUpdate(
+        { _id: req.body.userId },
+        {
+          $push: {
+            notifications: {
+              created: Date.now(),
+              username: req.username,
+              email: req.email,
+              notification: "commented on your post",
+              id: req.params.id,
+            },
           },
         },
-      },
-      { new: true }
-    )}
+        { new: true }
+      );
+    }
     res.json(result);
   } catch (error) {
     console.log(error);
