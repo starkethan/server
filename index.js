@@ -10,7 +10,7 @@ import { Report } from "./routes/report.js";
 import { post } from "./routes/post.js";
 import { ChatRoute } from "./routes/chatRoute.js";
 import { MessageRoute } from "./routes/messageRoute.js";
-import { Story } from "./routes/Story.js";
+// import { Story } from "./routes/Story.js";
 import { Friends } from "./routes/Friends.js";
 import { Server } from "socket.io";
 
@@ -32,7 +32,7 @@ app.use("/post", post);
 app.use("/chat", ChatRoute);
 app.use("/message", MessageRoute);
 app.use("/report", Report);
-app.use("/story", Story);
+// app.use("/story", Story);
 app.use("/friends", Friends);
 
 
