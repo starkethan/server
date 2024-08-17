@@ -50,7 +50,8 @@ const server = app.listen(process.env.PORT, () => {
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["hucschat.onrender.com", "https://starkethan.github.io/client/"]
+    
   },
 });
 let activeUsers = [];
